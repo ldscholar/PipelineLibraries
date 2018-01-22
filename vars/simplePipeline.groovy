@@ -16,7 +16,6 @@ def isChanged(build) {
     if (null == changeLogSets || changeLogSets.isEmpty()) {
         return false
     } else {
-        println("changeLogSets:" + changeLogSets)
         return true
     }
 }
