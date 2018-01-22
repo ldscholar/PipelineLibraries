@@ -10,7 +10,7 @@ def checkout(credentialsId, remoteUrl) {
     checkout(scm)
 
     def changeLogSets = currentBuild.changeSets
-    if (null == changeLogSets || changLogSet.isEmpty()) {
+    if (null == changeLogSets || changeLogSets.isEmpty()) {
         env.isChanged = 'false'
     } else {
         env.isChanged = 'true'
