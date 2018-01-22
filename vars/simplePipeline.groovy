@@ -43,3 +43,5 @@ def deploy(profile) {
                     setsid java -jar $jar --spring.profiles.active=$profile &"""
     }
 }
+
+return this
