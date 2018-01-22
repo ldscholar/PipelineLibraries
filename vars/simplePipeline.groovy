@@ -65,6 +65,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
     if (deployServers.length > 0) {
         stage('Deploy') {
             for (server in deployServers) {
+                echo "*server:$server*"
                 node(server) {
                     echo "deploying $server"
                     deploy("$NEXUS", "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
