@@ -1,4 +1,4 @@
-//var/pipelineUtil.groovy
+//var/simplePipeline.groovy
 def checkout(String remoteUrl, String credentialsId) {
     def scm = [$class              : 'SubversionSCM',
                filterChangelog     : false,
@@ -44,7 +44,7 @@ def deploy(Map profile) {
     }
 }
 
-def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile){
+def checkoutBuildDeploy(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile){
     node(buildServer) {
         stage('Checkout') {
             checkout(credentialsId, remoteUrl)
