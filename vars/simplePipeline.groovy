@@ -13,16 +13,7 @@ def checkout(String remoteUrl, String credentialsId) {
     }
 }
 
-
-def call(String buildServer, String remoteUrl, String credentialsId) {
-    node(buildServer){
-        echo "call"
-    }
-}
-
-
-/*
-def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
     node(buildServer){
         echo "call"
     }
@@ -53,4 +44,4 @@ def call(String buildServer, List<String> deployServers, String remoteUrl, Strin
         }
     }
 }
-*/
+
