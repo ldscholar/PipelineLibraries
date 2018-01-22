@@ -44,4 +44,3 @@ def deploy(profile) {
     }
 }
 
-return this
