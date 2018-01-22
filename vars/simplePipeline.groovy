@@ -29,7 +29,7 @@ def deploy(String remoteRepositories, String workspace, String jarRunningPath, S
     def jar = pom.artifactId + '-' + pom.version + '.jar'
     def artifact = pom.parent.groupId + ':' + pom.artifactId + ':' + pom.version
 
-    sh "mvn dependency:get -DremoteRepositories=$remoteRepositories -Dartifact=$artifact -Ddest=$workspace"
+    sh "mvn dependency:get -DremoteRepositories=$remoteRepositories -Dartifact=$artifact -Ddest=$workspace --quiet"
     try {
         sh "ps -ef | grep $jar | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
