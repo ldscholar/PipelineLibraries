@@ -1,25 +1,19 @@
 //var/simplePipeline.groovy
 def checkout(String remoteUrl, String credentialsId) {
-    pipeline {
-        node('dss-12') {
-            stage('Checkout') {
-                def scm = [$class              : 'SubversionSCM',
-                           filterChangelog     : false,
-                           ignoreDirPropChanges: false,
-                           includedRegions     : '',
-                           locations           : [[credentialsId: "$credentialsId", depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: "$remoteUrl"]],
-                           quietOperation      : true,
-                           workspaceUpdater    : [$class: 'UpdateUpdater']]
-                checkout(scm)
+    def scm = [$class              : 'SubversionSCM',
+               filterChangelog     : false,
+               ignoreDirPropChanges: false,
+               includedRegions     : '',
+               locations           : [[credentialsId: "$credentialsId", depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: "$remoteUrl"]],
+               quietOperation      : true,
+               workspaceUpdater    : [$class: 'UpdateUpdater']]
+    checkout(scm)
 
-                def changeLogSets = currentBuild.changeSets
-                if (null == changeLogSets || changeLogSets.isEmpty()) {
-                    env.isChanged = 'false'
-                } else {
-                    env.isChanged = 'true'
-                }
-            }
-        }
+    def changeLogSets = currentBuild.changeSets
+    if (null == changeLogSets || changeLogSets.isEmpty()) {
+        env.isChanged = 'false'
+    } else {
+        env.isChanged = 'true'
     }
 }
 
@@ -50,6 +44,21 @@ def deploy(Map profile) {
     }
 }
 
+def call(String remoteUrl, String credentialsId){
+    pipeline{
+        node(buildServer) {
+            stage('Checkout') {
+                checkout(credentialsId, remoteUrl)
+            }
+
+            stage('Build') {
+                build()
+            }
+        }
+    }
+}
+
+/*
 def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile){
     pipeline{
         node(buildServer) {
@@ -74,3 +83,4 @@ def call(String buildServer, List<String> deployServers, String remoteUrl, Strin
         }
     }
 }
+*/
