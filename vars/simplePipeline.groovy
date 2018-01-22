@@ -13,11 +13,20 @@ def checkout(String remoteUrl, String credentialsId) {
     }
 }
 
+
+def call(String buildServer) {
+    node(buildServer){
+        echo "call"
+    }
+}
+
+
+/*
 def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
     node(buildServer){
         echo "call"
     }
-    /*
+
     node(buildServer) {
         stage('Checkout') {
             checkout(remoteUrl, credentialsId)
@@ -43,5 +52,5 @@ def call(String buildServer, List<String> deployServers, String remoteUrl, Strin
             }
         }
     }
-    */
 }
+*/
