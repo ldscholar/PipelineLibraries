@@ -14,7 +14,7 @@ def checkout(String remoteUrl, String credentialsId) {
 }
 
 
-def call(String buildServer, List<String> deployServers) {
+def call(String buildServer, String remoteUrl, String credentialsId) {
     node(buildServer){
         echo "call"
     }
