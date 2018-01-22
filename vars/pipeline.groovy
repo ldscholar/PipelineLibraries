@@ -47,11 +47,11 @@ def deploy(Map profile) {
 def simplePipeline(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map profile){
     node(buildServer) {
         stage('Checkout') {
-            simplePipeline.checkout(credentialsId, remoteUrl)
+            checkout(credentialsId, remoteUrl)
         }
 
         stage('Build') {
-            simplePipeline.build()
+            build()
         }
     }
 
@@ -60,7 +60,7 @@ def simplePipeline(String buildServer, List<String> deployServers, String remote
             for (server in deployServers) {
                 node(server) {
                     echo "deploying $server"
-                    simplePipeline.deploy(profile[server])
+                    deploy(profile[server])
                 }
             }
         }
