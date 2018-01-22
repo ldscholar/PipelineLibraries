@@ -72,7 +72,5 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             }
         }
     }
-
-    echo "all done!"
 }
 
