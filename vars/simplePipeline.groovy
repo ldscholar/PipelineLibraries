@@ -52,24 +52,26 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             checkout(remoteUrl, credentialsId)
         }
 
-        if (isChanged(currentBuild)) {
-            stage('Build') {
+        stage('Build') {
+            if (isChanged(currentBuild)) {
                 build()
-                echo "项目构建成功."
+            } else {
+                echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
             }
-        } else {
-            echo "未检测到代码变化,不需要重新构建,已忽略."
         }
+
     }
 
-    if (deployServers.length > 0) {
-        stage('Deploy') {
+    stage('Deploy') {
+        if (deployServers.length > 0) {
             for (server in deployServers) {
                 node(server) {
                     echo "deploying $server"
                     deploy("$NEXUS", "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
                 }
             }
+        } else {
+            echo "没有指定服务器,不需要重新发布,已忽略Deploy步骤."
         }
     }
 }
