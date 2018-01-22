@@ -1,5 +1,5 @@
 //var/simplePipeline.groovy
-import static utils.PipelineStage.*
+//import static utils.PipelineStage.*
 
 def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
     echo "call"
