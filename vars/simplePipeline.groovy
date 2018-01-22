@@ -1,4 +1,4 @@
-//src/SimplePipeline.groovy
+//var/simplePipeline.groovy
 def checkout(credentialsId, remoteUrl) {
     def scm = [$class              : 'SubversionSCM',
                filterChangelog     : false,
