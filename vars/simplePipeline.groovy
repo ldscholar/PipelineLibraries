@@ -1,23 +1,7 @@
 //var/simplePipeline.groovy
-//import static utils.PipelineStage.*
-def checkout(String remoteUrl, String credentialsId) {
-    node("dss-12"){
-        def scm = [$class              : 'SubversionSCM',
-                   filterChangelog     : false,
-                   ignoreDirPropChanges: false,
-                   includedRegions     : '',
-                   locations           : [[credentialsId: "$credentialsId", depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: "$remoteUrl"]],
-                   quietOperation      : true,
-                   workspaceUpdater    : [$class: 'UpdateUpdater']]
-        checkout(scm)
-    }
-}
+import static utils.PipelineStage.*
 
 def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
-    node(buildServer){
-        echo "call"
-    }
-
     node(buildServer) {
         stage('Checkout') {
             checkout(remoteUrl, credentialsId)
