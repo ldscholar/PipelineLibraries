@@ -44,7 +44,7 @@ def deploy(Map profile) {
     }
 }
 
-def simplePipeline(String buildServer, List<String> deployServers, Map<String, String> profile, String remoteUrl, String credentialsId){
+def simplePipeline(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile){
     node(buildServer) {
         stage('Checkout') {
             checkout(credentialsId, remoteUrl)
