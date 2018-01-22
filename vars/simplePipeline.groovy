@@ -2,7 +2,20 @@
 //import static utils.PipelineStage.*
 
 def call(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
-    echo "call"
+    node("dss-12") {
+        stage('Checkout') {
+            checkout(remoteUrl, credentialsId)
+        }
+
+        stage('Build') {
+            if (isChanged(currentBuild)) {
+                build()
+                echo "构建成功."
+            } else {
+                echo "代码未作修改,不需要重新构建,已忽略."
+            }
+        }
+    }
     /*
     node(buildServer) {
         stage('Checkout') {
