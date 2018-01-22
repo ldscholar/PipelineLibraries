@@ -1,4 +1,5 @@
 //src/util/PipelineStage.groovy
+package utils
 class PipelineStage{
     static def checkout(String remoteUrl, String credentialsId) {
         def scm = [$class              : 'SubversionSCM',
