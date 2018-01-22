@@ -45,22 +45,24 @@ def deploy(Map profile) {
 }
 
 def checkoutBuildDeploy(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map<String, String> profile){
-    node(buildServer) {
-        stage('Checkout') {
-            checkout(credentialsId, remoteUrl)
+    pipeline{
+        node(buildServer) {
+            stage('Checkout') {
+                checkout(credentialsId, remoteUrl)
+            }
+
+            stage('Build') {
+                build()
+            }
         }
 
-        stage('Build') {
-            build()
-        }
-    }
-
-    if (!deployServers.isEmpty()) {
-        stage('Deploy') {
-            for (server in deployServers) {
-                node(server) {
-                    echo "deploying $server"
-                    deploy(profile[server])
+        if (!deployServers.isEmpty()) {
+            stage('Deploy') {
+                for (server in deployServers) {
+                    node(server) {
+                        echo "deploying $server"
+                        deploy(profile[server])
+                    }
                 }
             }
         }
