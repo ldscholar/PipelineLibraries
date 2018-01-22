@@ -52,20 +52,19 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             checkout(remoteUrl, credentialsId)
         }
 
-        stage('Build') {
-            if (isChanged(currentBuild)) {
+        if (isChanged(currentBuild)) {
+            stage('Build') {
                 build()
-                echo "项目构建结果:成功."
-            } else {
-                echo "项目构建结果:未检测到代码变化,不需要重新构建,已忽略."
+                echo "项目构建成功."
             }
+        } else {
+            echo "未检测到代码变化,不需要重新构建,已忽略."
         }
     }
 
     if (deployServers.length > 0) {
         stage('Deploy') {
             for (server in deployServers) {
-                echo "*server:$server*"
                 node(server) {
                     echo "deploying $server"
                     deploy("$NEXUS", "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
@@ -73,6 +72,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             }
         }
     }
-    echo "done!"
+
+    echo "all done!"
 }
 
