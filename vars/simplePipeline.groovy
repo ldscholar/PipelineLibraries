@@ -44,7 +44,7 @@ def deploy(Map profile) {
     }
 }
 
-def call(String remoteUrl, String credentialsId){
+def call(String buildServer, String remoteUrl, String credentialsId){
     pipeline{
         node(buildServer) {
             stage('Checkout') {
