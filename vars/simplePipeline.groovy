@@ -11,8 +11,8 @@ def checkout(String remoteUrl, String credentialsId) {
     checkout(scm)
 }
 
-def isChanged(currentBuild) {
-    def changeLogSets = currentBuild.changeSets
+def isChanged(build) {
+    def changeLogSets = build.changeSets
     if (null == changeLogSets || changeLogSets.isEmpty()) {
         return false
     } else {
@@ -21,7 +21,7 @@ def isChanged(currentBuild) {
 }
 
 def build() {
-    sh 'mvn clean deploy'
+    sh 'mvn clean deploy --quiet'
 }
 
 def deploy(String remoteRepositories, String workspace, String jarRunningPath, String profile) {
