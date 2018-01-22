@@ -62,7 +62,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
         }
     }
 
-    if (!deployServers.isEmpty()) {
+    if (deployServers.length > 0) {
         stage('Deploy') {
             for (server in deployServers) {
                 node(server) {
