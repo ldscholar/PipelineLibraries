@@ -20,7 +20,7 @@ def checkout(String remoteUrl, String credentialsId) {
 def call(String buildServer, String remoteUrl, String credentialsId){
     node(buildServer) {
         stage('Checkout') {
-            checkout(credentialsId, remoteUrl)
+            checkout(remoteUrl, credentialsId)
         }
 
         stage('Build') {
