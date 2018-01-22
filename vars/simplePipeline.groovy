@@ -57,7 +57,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                 build()
                 echo "构建成功."
             } else {
-                echo "代码未作修改,不需要重新构建,已忽略."
+                echo "未检测到代码变化,不需要重新构建,已忽略."
             }
         }
     }
