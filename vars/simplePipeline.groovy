@@ -46,14 +46,14 @@ def deploy(String remoteRepositories, String workspace, String jarRunningPath, S
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, Map<String, String> profile) {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile) {
     node(buildServer) {
         stage('Checkout') {
             checkout(remoteUrl, credentialsId)
         }
 
         stage('Build') {
-            if (isChanged(currentBuild)) {
+            if (rebuild || isChanged(currentBuild)) {
                 build()
             } else {
                 echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
