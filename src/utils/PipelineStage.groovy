@@ -1,6 +1,7 @@
 //src/util/PipelineStage.groovy
 package utils
-class PipelineStage{
+
+class PipelineStage {
     static def checkout(String remoteUrl, String credentialsId) {
         def scm = [$class              : 'SubversionSCM',
                    filterChangelog     : false,
@@ -10,37 +11,38 @@ class PipelineStage{
                    quietOperation      : true,
                    workspaceUpdater    : [$class: 'UpdateUpdater']]
         checkout(scm)
+    }
 
+    static def isChanged(currentBuild) {
         def changeLogSets = currentBuild.changeSets
         if (null == changeLogSets || changeLogSets.isEmpty()) {
-            env.isChanged = 'false'
+            return false
         } else {
-            env.isChanged = 'true'
+            return true
         }
     }
 
     static def build() {
-        if (env.isChanged.equals('true')) {
-            sh 'mvn clean deploy'
-        }
-        def pom = readMavenPom file: 'pom.xml'
-        env.jar = pom.artifactId + '-' + pom.version + '.jar'
-        env.artifact = pom.parent.groupId + ':' + pom.artifactId + ':' + pom.version
+        sh 'mvn clean deploy'
     }
 
-    static def deploy(Map profile) {
-        sh "mvn dependency:get -DremoteRepositories=$NEXUS -Dartifact=$artifact -Ddest=$WORKSPACE"
+    static def deploy(String remoteRepositories, String workspace, String jarRunningPath, String profile) {
+        def pom = readMavenPom file: 'pom.xml'
+        def jar = pom.artifactId + '-' + pom.version + '.jar'
+        def artifact = pom.parent.groupId + ':' + pom.artifactId + ':' + pom.version
+
+        sh "mvn dependency:get -DremoteRepositories=$remoteRepositories -Dartifact=$artifact -Ddest=$workspace"
         try {
             sh "ps -ef | grep $jar | grep -v grep | awk '{print \$2}' | xargs kill -9"
         } catch (err) {
             echo "WARNING: 旧服务关闭失败,可能是旧服务未启动或已关闭"
         }
 
-        dir("$JAR_RUNNING_PATH") {
+        dir("$jarRunningPath") {
             if (fileExists("$jar")) {
                 sh "mv -b ./$jar ./backup/$jar"
             }
-            sh "mv -f $WORKSPACE/$jar ./$jar"
+            sh "mv -f $workspace/$jar ./$jar"
             sh """JENKINS_NODE_COOKIE=dontKillMe
                         setsid java -jar $jar --spring.profiles.active=$profile &"""
         }

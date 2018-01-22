@@ -8,7 +8,12 @@ def call(String buildServer, List<String> deployServers, String remoteUrl, Strin
         }
 
         stage('Build') {
-            build()
+            if (isChanged(currentBuild)) {
+                build()
+                echo "构建成功."
+            } else {
+                echo "代码未作修改,不需要重新构建,已忽略."
+            }
         }
     }
 
@@ -17,7 +22,7 @@ def call(String buildServer, List<String> deployServers, String remoteUrl, Strin
             for (server in deployServers) {
                 node(server) {
                     echo "deploying $server"
-                    deploy(profile[server])
+                    deploy("$NEXUS", "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
                 }
             }
         }
