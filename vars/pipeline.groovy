@@ -1,5 +1,5 @@
 //var/simplePipeline.groovy
-def checkout(credentialsId, remoteUrl) {
+def checkout(String remoteUrl, String credentialsId) {
     def scm = [$class              : 'SubversionSCM',
                filterChangelog     : false,
                ignoreDirPropChanges: false,
@@ -26,7 +26,7 @@ def build() {
     env.artifact = pom.parent.groupId + ':' + pom.artifactId + ':' + pom.version
 }
 
-def deploy(profile) {
+def deploy(Map profile) {
     sh "mvn dependency:get -DremoteRepositories=$NEXUS -Dartifact=$artifact -Ddest=$WORKSPACE"
     try {
         sh "ps -ef | grep $jar | grep -v grep | awk '{print \$2}' | xargs kill -9"
@@ -44,3 +44,25 @@ def deploy(profile) {
     }
 }
 
+def simplePipeline(String buildServer, List<String> deployServers, String remoteUrl, String credentialsId, Map profile){
+    node(buildServer) {
+        stage('Checkout') {
+            simplePipeline.checkout(credentialsId, remoteUrl)
+        }
+
+        stage('Build') {
+            simplePipeline.build()
+        }
+    }
+
+    if (!deployServers.isEmpty()) {
+        stage('Deploy') {
+            for (server in deployServers) {
+                node(server) {
+                    echo "deploying $server"
+                    simplePipeline.deploy(profile[server])
+                }
+            }
+        }
+    }
+}
