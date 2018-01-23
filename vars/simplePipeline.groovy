@@ -77,7 +77,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                 node(server) {
                     echo "deploying $server"
                     if (null == profile || profile.isEmpty() || null == profile[server]) {
-                        deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", "${spring.profiles.active}")
+                        deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", "${SPRING_PROFILES_ACTIVE}")
                     } else {
                         deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
                     }
