@@ -40,18 +40,24 @@ def deploy(String remoteRepositories, Model pom, String workspace, String jarRun
         if (fileExists("$jar")) {
             sh "mv -b ./$jar ./backup/$jar"
         }
+
         sh "mv -f $workspace/$jar ./$jar"
-        sh """JENKINS_NODE_COOKIE=dontKillMe
-                        setsid java -jar $jar --spring.profiles.active=$profile &"""
+
+        sh 'JENKINS_NODE_COOKIE=dontKillMe'
+        if ("$profile".isEmpty()) {
+            sh "setsid java -jar $jar &"
+        } else {
+            sh "setsid java -jar $jar --spring.profiles.active=$profile &"
+        }
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir='./') {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './') {
     def pom
     node(buildServer) {
         stage('Checkout') {
             checkout(remoteUrl, credentialsId)
-            dir(pomDir){
+            dir(pomDir) {
                 pom = readMavenPom file: 'pom.xml'
             }
         }
@@ -70,7 +76,11 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             for (server in deployServers) {
                 node(server) {
                     echo "deploying $server"
-                    deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
+                    if (null == profile || profile.isEmpty() || null == profile[server]) {
+                        deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", "${spring.profiles.active}")
+                    } else {
+                        deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
+                    }
                 }
             }
         } else {
