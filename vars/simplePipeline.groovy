@@ -24,10 +24,9 @@ def build() {
     sh 'mvn clean deploy --quiet'
 }
 
-def deploy(String remoteRepositories, String workspace, String jarRunningPath, String profile) {
-    def pom = readMavenPom file: 'pom.xml'
-    def jar = pom.artifactId + '-' + pom.version + '.jar'
-    def artifact = pom.parent.groupId + ':' + pom.artifactId + ':' + pom.version
+def deploy(String , Map<String, String> pom, String workspace, String jarRunningPath, String profile) {
+    def jar = "${pom.artifactId}-${pom.version}.${pom.packaging}"
+    def artifact = "${pom.parent.groupId}:${pom.artifactId}:${pom.version}"
 
     sh "mvn dependency:get -DremoteRepositories=$remoteRepositories -Dartifact=$artifact -Ddest=$workspace --quiet"
     try {
@@ -46,10 +45,14 @@ def deploy(String remoteRepositories, String workspace, String jarRunningPath, S
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile) {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir='./') {
+    def pom
     node(buildServer) {
         stage('Checkout') {
             checkout(remoteUrl, credentialsId)
+            dir(pomDir){
+                pom = readMavenPom file: 'pom.xml'
+            }
         }
 
         stage('Build') {
@@ -59,7 +62,6 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                 echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
             }
         }
-
     }
 
     stage('Deploy') {
@@ -67,7 +69,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             for (server in deployServers) {
                 node(server) {
                     echo "deploying $server"
-                    deploy("$NEXUS", "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
+                    deploy("$NEXUS", pom, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
                 }
             }
         } else {
