@@ -41,8 +41,7 @@ def deploy(String remoteRepositories, pom, String workspace, String jarRunningPa
         }
 
         sh "mv -f $workspace/$jar ./$jar"
-
-        sh 'JENKINS_NODE_COOKIE=dontKillMe'
+        
         if ("$profile".isEmpty()) {
             sh """JENKINS_NODE_COOKIE=dontKillMe
                     setsid java -jar $jar &"""
