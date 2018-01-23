@@ -44,9 +44,11 @@ def deploy(String remoteRepositories, pom, String workspace, String jarRunningPa
 
         sh 'JENKINS_NODE_COOKIE=dontKillMe'
         if ("$profile".isEmpty()) {
-            sh "setsid java -jar $jar &"
+            sh """JENKINS_NODE_COOKIE=dontKillMe
+                    setsid java -jar $jar &"""
         } else {
-            sh "setsid java -jar $jar --spring.profiles.active=$profile &"
+            sh """JENKINS_NODE_COOKIE=dontKillMe
+                    setsid java -jar $jar --spring.profiles.active=$profile &"""
         }
     }
 }
