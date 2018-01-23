@@ -1,5 +1,4 @@
 //var/simplePipeline.groovy
-import org.apache.maven.model.Model
 
 def checkout(String remoteUrl, String credentialsId) {
     def scm = [$class              : 'SubversionSCM',
@@ -25,7 +24,7 @@ def build() {
     sh 'mvn clean deploy --quiet'
 }
 
-def deploy(String remoteRepositories, Model pom, String workspace, String jarRunningPath, String profile) {
+def deploy(String remoteRepositories, pom, String workspace, String jarRunningPath, String profile) {
     def jar = "${pom.artifactId}-${pom.version}.${pom.packaging}"
     def artifact = "${pom.parent.groupId}:${pom.artifactId}:${pom.version}"
 
