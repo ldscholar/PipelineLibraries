@@ -27,7 +27,7 @@ def build() {
 def deploy(String remoteRepositories, pom, String workspace, String jarRunningPath, String profile) {
     def jar = "${pom.artifactId}-${pom.version}.${pom.packaging}"
     def artifact
-    if ("${pom.groupId}".isEmpty()) {
+    if (null == pom.groupId) {
         artifact = "${pom.parent.groupId}:${pom.artifactId}:${pom.version}"
     } else {
         artifact = "${pom.groupId}:${pom.artifactId}:${pom.version}"
