@@ -20,7 +20,7 @@ def isChanged(build) {
     }
 }
 
-def build(String jarSavePath, String jarName) {
+def build(String targetDir, String jarSavePath, String jarName) {
     sh 'mvn clean package --quiet'
     //打完包之后,复制jar包到$jarRunningPath("/home/ways")下面
     dir("$jarSavePath") {
@@ -28,7 +28,7 @@ def build(String jarSavePath, String jarName) {
             sh "mv -b ./$jarName ./backup/$jarName"
         }
 
-        sh "mv -f $WORKSPACE/target/$jarName ./$jarName"
+        sh "mv -f $WORKSPACE/$targetDir/$jarName ./$jarName"
     }
 }
 
@@ -70,7 +70,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
         stage('Build') {
             if (isChanged(currentBuild) || rebuild) {
-                build("$JAR_RUNNING_PATH", jarName)
+                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
             } else {
                 echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
             }
