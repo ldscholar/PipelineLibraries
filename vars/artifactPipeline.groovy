@@ -87,9 +87,9 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                 node(server) {
                     echo "deploying $server"
                     if (null == profile || profile.isEmpty() || null == profile[server]) {
-                        deploy(rebuild, pom, "$WORKSPACE", "$JAR_RUNNING_PATH", "${env.SPRING_PROFILES_ACTIVE ?: ''}")
+                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", "${env.SPRING_PROFILES_ACTIVE ?: ''}")
                     } else {
-                        deploy(rebuild, pom, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
+                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
                     }
                 }
             }
