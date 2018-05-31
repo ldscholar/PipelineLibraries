@@ -75,7 +75,9 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                 echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
             }
 
-            stash name: "jar-stash", includes: "$JAR_RUNNING_PATH/$jarName"
+            dir($JAR_RUNNING_PATH) {
+                stash name: "jar-stash", includes: "$jarName"
+            }
         }
     }
 
