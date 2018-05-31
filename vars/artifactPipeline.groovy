@@ -20,10 +20,10 @@ def isChanged(build) {
     }
 }
 
-def build(jarName) {
+def build(String jarSavePath, String jarName) {
     sh 'mvn clean package --quiet'
     //打完包之后,复制jar包到$jarRunningPath("/home/ways")下面
-    dir("$jarRunningPath") {
+    dir("$jarSavePath") {
         if (fileExists("$jarName")) {
             sh "mv -b ./$jarName ./backup/$jarName"
         }
@@ -70,12 +70,12 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
         stage('Build') {
             if (isChanged(currentBuild) || rebuild) {
-                build(jarName)
+                build("$JAR_RUNNING_PATH", jarName)
             } else {
                 echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
             }
 
-            stash name: "jar-stash", includes: "$jarRunningPath/$jarName"
+            stash name: "jar-stash", includes: "$JAR_RUNNING_PATH/$jarName"
         }
     }
 
