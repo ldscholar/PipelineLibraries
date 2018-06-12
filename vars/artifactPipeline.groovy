@@ -41,7 +41,9 @@ def deploy(boolean rebuild, String jarName, String workspace, String jarRunningP
 
     dir("$jarRunningPath") {
         if (fileExists("$jarName")) {
-            sh "mv -b ./$jarName ./backup/$jarName"
+            //这里不再备份jar包了
+            //sh "mv -b ./$jarName ./backup/$jarName"
+            sh "rm -f $jarName"
         }
 
         unstash "jar-stash"
