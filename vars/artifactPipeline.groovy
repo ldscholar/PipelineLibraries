@@ -86,7 +86,13 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
     stage('Deploy') {
         if (deployServers.length > 0) {
-            def profileExtend = "${profile[EXTEND] ? ',' + profile[EXTEND] : ''}"
+            def profileExtend
+            if (null != profile) {
+                profileExtend = "${profile[EXTEND] ? ',' + profile[EXTEND] : ''}"
+            } else {
+                profileExtend = ''
+            }
+            
             for (server in deployServers) {
                 def activeProfile
                 node(server) {
