@@ -59,6 +59,7 @@ def deploy(boolean rebuild, String jarName, String workspace, String jarRunningP
 }
 
 def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './') {
+    final String EXTEND = "extend"
     def pom
     def jarName
     node(buildServer) {
@@ -85,14 +86,17 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
     stage('Deploy') {
         if (deployServers.length > 0) {
+            def profileExtend = "$profile[EXTEND]?','+$profile[EXTEND]:''"
             for (server in deployServers) {
+                def activeProfile
                 node(server) {
                     echo "deploying $server"
                     if (null == profile || profile.isEmpty() || null == profile[server]) {
-                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", "${env.SPRING_PROFILES_ACTIVE ?: ''}")
+                        activeProfile = "${env.SPRING_PROFILES_ACTIVE ?: ''}" + profileExtend
                     } else {
-                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", profile[server])
+                        activeProfile = profile[server] + profileExtend
                     }
+                    deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
                 }
             }
         } else {
