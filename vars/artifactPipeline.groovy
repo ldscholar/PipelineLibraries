@@ -58,13 +58,41 @@ def deploy(boolean rebuild, String jarName, String workspace, String jarRunningP
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './') {
+def reboot(String jarName, String jarRunningPath, String profile) {
+    try {
+        sh "ps -ef | grep $jarName | grep -v grep | awk '{print \$2}' | xargs kill -9"
+    } catch (err) {
+        // nothing
+    }
+
+    dir("$jarRunningPath") {
+        if (fileExists("$jarName")) {
+            if ("$profile".isEmpty()) {
+                sh """JENKINS_NODE_COOKIE=dontKillMe
+                    setsid java -jar $jarName &"""
+            } else {
+                sh """JENKINS_NODE_COOKIE=dontKillMe
+                    setsid java -jar $jarName --spring.profiles.active=$profile &"""
+            }
+        } else {
+            echo "启动失败,未找到上次build的jar包."
+        }
+    }
+}
+
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', boolean rebootOnly = false) {
     final String EXTEND = "extend"
     def pom
     def jarName
+
     node(buildServer) {
         stage('Checkout') {
-            checkout(remoteUrl, credentialsId)
+            if (rebootOnly) {
+                echo "指定了rebootOnly, 已跳过Build步骤."
+            } else {
+                checkout(remoteUrl, credentialsId)
+            }
+
             dir(pomDir) {
                 pom = readMavenPom file: 'pom.xml'
                 jarName = "${pom.artifactId}-${pom.version}.${pom.packaging}"
@@ -72,14 +100,18 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
         }
 
         stage('Build') {
-            if (isChanged(currentBuild) || rebuild) {
-                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
+            if (rebootOnly) {
+                echo "指定了rebootOnly, 已跳过Build步骤."
             } else {
-                echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
-            }
+                if (isChanged(currentBuild) || rebuild) {
+                    build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
+                } else {
+                    echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
+                }
 
-            dir("$JAR_RUNNING_PATH") {
-                stash name: "jar-stash", includes: "$jarName"
+                dir("$JAR_RUNNING_PATH") {
+                    stash name: "jar-stash", includes: "$jarName"
+                }
             }
         }
     }
@@ -92,17 +124,23 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             } else {
                 profileExtend = ''
             }
-            
+
             for (server in deployServers) {
                 def activeProfile
                 node(server) {
-                    echo "deploying $server"
                     if (null == profile || profile.isEmpty() || null == profile[server]) {
                         activeProfile = "${env.SPRING_PROFILES_ACTIVE ?: ''}" + profileExtend
                     } else {
                         activeProfile = profile[server] + profileExtend
                     }
-                    deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
+
+                    if (rebootOnly) {
+                        echo "booting $server"
+                        reboot(jarName, "$JAR_RUNNING_PATH", activeProfile)
+                    } else {
+                        echo "deploying $server"
+                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
+                    }
                 }
             }
         } else {
