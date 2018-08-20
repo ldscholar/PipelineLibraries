@@ -32,9 +32,9 @@ def build(String targetDir, String jarSavePath, String jarName) {
     }
 }
 
-def deploy(boolean rebuild, String jarName, String workspace, String jarRunningPath, String profile) {
+def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile) {
     try {
-        sh "ps -ef | grep $jarName | grep -v grep | awk '{print \$2}' | xargs kill -9"
+        sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
         echo "WARNING: 旧服务关闭失败,可能是旧服务未启动或已关闭"
     }
@@ -58,9 +58,9 @@ def deploy(boolean rebuild, String jarName, String workspace, String jarRunningP
     }
 }
 
-def reboot(String jarName, String jarRunningPath, String profile) {
+def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile) {
     try {
-        sh "ps -ef | grep $jarName | grep -v grep | awk '{print \$2}' | xargs kill -9"
+        sh "ps -ef | grep java | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
         // nothing
     }
@@ -84,6 +84,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
     final String EXTEND = "extend"
     def pom
     def jarName
+    def jarNameIgnoreVersion
 
     node(buildServer) {
         stage('Checkout') {
@@ -96,6 +97,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
             dir(pomDir) {
                 pom = readMavenPom file: 'pom.xml'
                 jarName = "${pom.artifactId}-${pom.version}.${pom.packaging}"
+                jarNameIgnoreVersion = "${pom.artifactId}-.*.${pom.packaging}"
             }
         }
 
@@ -136,10 +138,10 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
                     if (rebootOnly) {
                         echo "booting $server"
-                        reboot(jarName, "$JAR_RUNNING_PATH", activeProfile)
+                        reboot(jarName, jarNameIgnoreVersion, "$JAR_RUNNING_PATH", activeProfile)
                     } else {
                         echo "deploying $server"
-                        deploy(rebuild, jarName, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
+                        deploy(rebuild, jarName, jarNameIgnoreVersion, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
                     }
                 }
             }
