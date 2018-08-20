@@ -60,7 +60,7 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 
 def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile) {
     try {
-        sh "ps -ef | grep java | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
+        sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
         // nothing
     }
