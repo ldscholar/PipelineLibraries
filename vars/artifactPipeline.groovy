@@ -50,10 +50,10 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 
         if ("$profile".isEmpty()) {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName >/dev/null &"""
+                    setsid java -jar $jarName 1>/dev/null 2>/dev/null &"""
         } else {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile >/dev/null &"""
+                    setsid java -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
         }
     }
 }
@@ -69,10 +69,10 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
         if (fileExists("$jarName")) {
             if ("$profile".isEmpty()) {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName >/dev/null &"""
+                    setsid java -jar $jarName 1>/dev/null 2>/dev/null &"""
             } else {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile >/dev/null &"""
+                    setsid java -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
             }
         } else {
             echo "启动失败,未找到上次build的jar包."
