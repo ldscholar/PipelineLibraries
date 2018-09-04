@@ -50,10 +50,10 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 
         if ("$profile".isEmpty()) {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName &"""
+                    setsid java -jar $jarName >/dev/null &"""
         } else {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile &"""
+                    setsid java -jar $jarName --spring.profiles.active=$profile >/dev/null &"""
         }
     }
 }
@@ -69,10 +69,10 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
         if (fileExists("$jarName")) {
             if ("$profile".isEmpty()) {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName &"""
+                    setsid java -jar $jarName >/dev/null &"""
             } else {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile &"""
+                    setsid java -jar $jarName --spring.profiles.active=$profile >/dev/null &"""
             }
         } else {
             echo "启动失败,未找到上次build的jar包."
@@ -88,11 +88,8 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
     node(buildServer) {
         stage('Checkout') {
-            if (rebootOnly) {
-                echo "指定了rebootOnly, 已跳过Build步骤."
-            } else {
-                checkout(remoteUrl, credentialsId)
-            }
+            //即使指定了rebootOnly也需要checkout,不然根据SVN自动发布会失效
+            checkout(remoteUrl, credentialsId)
 
             dir(pomDir) {
                 pom = readMavenPom file: 'pom.xml'
