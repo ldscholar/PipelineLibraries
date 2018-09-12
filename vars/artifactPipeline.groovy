@@ -80,11 +80,12 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', boolean rebootOnly = false) {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './') {
     final String EXTEND = "extend"
     def pom
     def jarName
     def jarNameIgnoreVersion
+    boolean rebootOnly = false
 
     node(buildServer) {
         stage('Checkout') {
@@ -99,18 +100,14 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
         }
 
         stage('Build') {
-            if (rebootOnly) {
-                echo "指定了rebootOnly, 已跳过Build步骤."
-            } else {
-                if (isChanged(currentBuild) || rebuild) {
-                    build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
-                } else {
-                    echo "未检测到代码变化,不需要重新构建,已忽略Build步骤."
-                }
-
+            if (isChanged(currentBuild) || rebuild) {
+                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
                 dir("$JAR_RUNNING_PATH") {
                     stash name: "jar-stash", includes: "$jarName"
                 }
+            } else {
+                rebootOnly = true
+                echo "不需要重新构建,将使用上次构建的jar包启动服务."
             }
         }
     }
