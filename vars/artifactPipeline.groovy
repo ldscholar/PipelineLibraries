@@ -75,7 +75,8 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
                     setsid java -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
             }
         } else {
-            echo "启动失败,未找到上次build的jar包."
+            echo "启动失败! 未找到上次构建的jar包,您需要重新构建项目."
+            currentStage.result = 'FAILURE'
         }
     }
 }
