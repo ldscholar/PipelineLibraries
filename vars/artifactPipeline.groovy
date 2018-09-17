@@ -8,7 +8,7 @@ def checkout(String remoteUrl, String credentialsId) {
                locations           : [[credentialsId: "$credentialsId", depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: "$remoteUrl"]],
                quietOperation      : true,
                workspaceUpdater    : [$class: 'UpdateUpdater']]
-    checkout(scm)
+    return checkout(scm)
 }
 
 def isChanged(build) {
@@ -20,8 +20,9 @@ def isChanged(build) {
     }
 }
 
-def build(String targetDir, String jarSavePath, String jarName) {
-    sh 'mvn clean package --quiet'
+def build(String targetDir, String jarSavePath, String jarName, String scmRevision) {
+    String buildTime = new Date().format('yyyy-MM-dd HH:mm:ss')
+    sh "mvn clean package --quiet -DscmRevision=\"${scmRevision}\" -DbuildTime=\"${buildTime}\""
     //打完包之后,复制jar包到$jarRunningPath("/home/ways")下面
     dir("$jarSavePath") {
         if (fileExists("$jarName")) {
@@ -86,12 +87,13 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
     def pom
     def jarName
     def jarNameIgnoreVersion
+    String scmRevision
     boolean rebootOnly = false
 
     node(buildServer) {
         stage('Checkout') {
             //即使指定了rebootOnly也需要checkout,不然根据SVN自动发布会失效
-            checkout(remoteUrl, credentialsId)
+            scmRevision = checkout(remoteUrl, credentialsId).SVN_REVISION
 
             dir(pomDir) {
                 pom = readMavenPom file: 'pom.xml'
@@ -102,7 +104,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
         stage('Build') {
             if (isChanged(currentBuild) || rebuild) {
-                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName)
+                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName, scmRevision)
                 dir("$JAR_RUNNING_PATH") {
                     stash name: "jar-stash", includes: "$jarName"
                 }
