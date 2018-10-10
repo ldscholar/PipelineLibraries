@@ -91,8 +91,8 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
  * @param rebuild 强制重新构建
  * @param profile spring.profiles.active参数
  * @param pomDir pom相对路径
- * @param xms JVM最大内存大小
- * @param xmx JVM初始内存大小
+ * @param xms JVM初始内存大小
+ * @param xmx JVM最大内存大小
  * @return
  */
 def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', String xms = '1024m', String xmx = '1024m') {
