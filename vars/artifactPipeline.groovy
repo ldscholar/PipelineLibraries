@@ -33,7 +33,7 @@ def build(String targetDir, String jarSavePath, String jarName, String scmRevisi
     }
 }
 
-def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile) {
+def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
     try {
         sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
@@ -51,15 +51,15 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 
         if ("$profile".isEmpty()) {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName 1>/dev/null 2>/dev/null &"""
+                    setsid java -server -Xms$xms -Xmx$xmx -jar $jarName 1>/dev/null 2>/dev/null &"""
         } else {
             sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
+                    setsid java -server -Xms$xms -Xmx$xmx -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
         }
     }
 }
 
-def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile) {
+def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile, String xms, String xmx) {
     try {
         sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
     } catch (err) {
@@ -70,10 +70,10 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
         if (fileExists("$jarName")) {
             if ("$profile".isEmpty()) {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName 1>/dev/null 2>/dev/null &"""
+                    setsid java -server -Xms$xms -Xmx$xmx -jar $jarName 1>/dev/null 2>/dev/null &"""
             } else {
                 sh """JENKINS_NODE_COOKIE=dontKillMe
-                    setsid java -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
+                    setsid java -server -Xms$xms -Xmx$xmx -jar $jarName --spring.profiles.active=$profile 1>/dev/null 2>/dev/null &"""
             }
         } else {
             echo "启动失败! 未找到上次构建的jar包,您需要重新构建项目."
@@ -82,7 +82,20 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
     }
 }
 
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './') {
+/**
+ * 入口函数
+ * @param buildServer 执行构建的服务器
+ * @param deployServers 需要发布的服务器
+ * @param remoteUrl 代码checkout路径
+ * @param credentialsId scm认证id
+ * @param rebuild 强制重新构建
+ * @param profile spring.profiles.active参数
+ * @param pomDir pom相对路径
+ * @param xms JVM最大内存大小
+ * @param xmx JVM初始内存大小
+ * @return
+ */
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', String xms = '1024m', String xmx = '1024m') {
     final String EXTEND = "extend"
     def pom
     def jarName
@@ -135,10 +148,10 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
                     if (rebootOnly) {
                         echo "booting $server"
-                        reboot(jarName, jarNameIgnoreVersion, "$JAR_RUNNING_PATH", activeProfile)
+                        reboot(jarName, jarNameIgnoreVersion, "$JAR_RUNNING_PATH", activeProfile, xms, xmx)
                     } else {
                         echo "deploying $server"
-                        deploy(rebuild, jarName, jarNameIgnoreVersion, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile)
+                        deploy(rebuild, jarName, jarNameIgnoreVersion, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile, xms, xmx)
                     }
                 }
             }
