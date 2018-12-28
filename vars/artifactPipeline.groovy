@@ -33,11 +33,34 @@ def build(String targetDir, String jarSavePath, String jarName, String scmRevisi
     }
 }
 
-def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
+/**
+ * 关闭指定进程
+ * @param pName 进程名称
+ * @param timeLimit 等待进程关闭的最长时间
+ * @return
+ */
+def shutdown(String pName, int timeLimit = 10) {
     try {
-        sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
+        sh "ps -ef | grep $pName | grep -v grep | awk '{print \$2}' | xargs kill"
     } catch (err) {
-        echo "WARNING: 旧服务关闭失败,可能是旧服务未启动或已关闭"
+        // nothing
+    }
+
+    try {
+        timeout(time: timeLimit, unit: 'SECONDS') {
+            //等待进程关闭
+            sh "while pgrep $pName;do sleep 0.1s; done"
+        }
+    } catch (err) {
+        return false
+    }
+    return true
+}
+
+def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
+    echo "正在关闭上次启动的$jarName"
+    if (!shutdown(jarNameIgnoreVersion)) {
+        echo "ERROR: 😭jenkins无法关闭上次启动的$jarName."
     }
 
     dir("$jarRunningPath") {
@@ -60,10 +83,9 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 }
 
 def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile, String xms, String xmx) {
-    try {
-        sh "ps -ef | grep $jarNameIgnoreVersion | grep -v grep | awk '{print \$2}' | xargs kill -9"
-    } catch (err) {
-        // nothing
+    echo "正在关闭上次启动的$jarName"
+    if (!shutdown(jarNameIgnoreVersion)) {
+        echo "ERROR: 😭jenkins无法关闭上次启动的$jarName."
     }
 
     dir("$jarRunningPath") {
