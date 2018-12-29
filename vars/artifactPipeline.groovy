@@ -49,7 +49,7 @@ def shutdown(String pName, int timeLimit = 10) {
     try {
         timeout(time: timeLimit, unit: 'SECONDS') {
             //等待进程关闭
-            sh "while pgrep $pName;do sleep 0.1s; done"
+            sh "set +x; while ps -ef |grep $pName |grep -v grep >/dev/null; do sleep 0.1s; done"
         }
     } catch (err) {
         return false
@@ -57,10 +57,10 @@ def shutdown(String pName, int timeLimit = 10) {
     return true
 }
 
-def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
-    echo "正在关闭上次启动的$jarName"
+def deploy(String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
+    echo "正在停止上次启动的$jarNameIgnoreVersion"
     if (!shutdown(jarNameIgnoreVersion)) {
-        error "😭jenkins无法关闭上次启动的$jarNameIgnoreVersion."
+        error "😭jenkins似乎无法停止上次启动的$jarNameIgnoreVersion."
     }
 
     dir("$jarRunningPath") {
@@ -83,9 +83,9 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 }
 
 def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile, String xms, String xmx) {
-    echo "正在关闭上次启动的$jarName"
+    echo "正在停止上次启动的$jarNameIgnoreVersion"
     if (!shutdown(jarNameIgnoreVersion)) {
-        error "😭jenkins无法关闭上次启动的$jarNameIgnoreVersion."
+        error "😭jenkins似乎无法停止上次启动的$jarNameIgnoreVersion."
     }
 
     dir("$jarRunningPath") {
@@ -173,7 +173,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
                         reboot(jarName, jarNameIgnoreVersion, "$JAR_RUNNING_PATH", activeProfile, xms, xmx)
                     } else {
                         echo "deploying $server"
-                        deploy(rebuild, jarName, jarNameIgnoreVersion, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile, xms, xmx)
+                        deploy(jarName, jarNameIgnoreVersion, "$WORKSPACE", "$JAR_RUNNING_PATH", activeProfile, xms, xmx)
                     }
                 }
             }
