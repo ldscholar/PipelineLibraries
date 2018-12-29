@@ -60,7 +60,7 @@ def shutdown(String pName, int timeLimit = 10) {
 def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String workspace, String jarRunningPath, String profile, String xms, String xmx) {
     echo "正在关闭上次启动的$jarName"
     if (!shutdown(jarNameIgnoreVersion)) {
-        echo "ERROR: 😭jenkins无法关闭上次启动的$jarName."
+        error "😭jenkins无法关闭上次启动的$jarNameIgnoreVersion."
     }
 
     dir("$jarRunningPath") {
@@ -85,7 +85,7 @@ def deploy(boolean rebuild, String jarName, String jarNameIgnoreVersion, String 
 def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, String profile, String xms, String xmx) {
     echo "正在关闭上次启动的$jarName"
     if (!shutdown(jarNameIgnoreVersion)) {
-        echo "ERROR: 😭jenkins无法关闭上次启动的$jarName."
+        error "😭jenkins无法关闭上次启动的$jarNameIgnoreVersion."
     }
 
     dir("$jarRunningPath") {
