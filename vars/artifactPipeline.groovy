@@ -39,7 +39,7 @@ def build(String targetDir, String jarSavePath, String jarName, String scmRevisi
  * @param timeLimit 等待进程关闭的最长时间
  * @return
  */
-def shutdown(String pName, int timeLimit = 10) {
+def shutdown(String pName, int timeLimit = 60) {
     try {
         sh "ps -ef | grep $pName | grep -v grep | awk '{print \$2}' | xargs kill"
     } catch (err) {
