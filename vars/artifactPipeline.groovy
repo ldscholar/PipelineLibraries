@@ -20,9 +20,9 @@ def isChanged(build) {
     }
 }
 
-def build(String targetDir, String jarSavePath, String jarName, String scmRevision) {
+def build(String targetDir, String jarSavePath, String jarName, String scmRevision, String mvnCmd) {
     String buildTime = new Date().format('yyyy-MM-dd HH:mm:ss')
-    sh "mvn clean package --quiet -DscmRevision=\"${scmRevision}\" -DbuildTime=\"${buildTime}\""
+    sh "mvn clean package --quiet -DscmRevision=\"${scmRevision}\" -DbuildTime=\"${buildTime}\" ${mvnCmd}"
     //打完包之后,复制jar包到$jarRunningPath("/home/ways")下面
     dir("$jarSavePath") {
         if (fileExists("$jarName")) {
@@ -117,7 +117,7 @@ def reboot(String jarName, String jarNameIgnoreVersion, String jarRunningPath, S
  * @param xmx JVM最大内存大小
  * @return
  */
-def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', String xms = '1024m', String xmx = '1024m') {
+def call(String buildServer, String[] deployServers, String remoteUrl, String credentialsId, boolean rebuild, Map<String, String> profile, String pomDir = './', String xms = '1024m', String xmx = '1024m', String mvnCmd = '') {
     final String EXTEND = "extend"
     def pom
     def jarName
@@ -139,7 +139,7 @@ def call(String buildServer, String[] deployServers, String remoteUrl, String cr
 
         stage('Build') {
             if (isChanged(currentBuild) || rebuild) {
-                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName, scmRevision)
+                build("$pomDir/target", "$JAR_RUNNING_PATH", jarName, scmRevision, mvnCmd)
                 dir("$JAR_RUNNING_PATH") {
                     stash name: "jar-stash", includes: "$jarName"
                 }
